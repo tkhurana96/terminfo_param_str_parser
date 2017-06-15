@@ -1,9 +1,9 @@
 #include <iostream>
 #include <map>
 #include <stack>
+#include <string>
 #include <typeinfo>
 #include <vector>
-#include <string>
 
 std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
 
@@ -69,7 +69,7 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         break;
       }
 
-      case '+':{
+      case '+': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
@@ -82,7 +82,7 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         break;
       }
 
-      case '-':{
+      case '-': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
@@ -95,7 +95,7 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         break;
       }
 
-      case '*':{
+      case '*': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
@@ -108,8 +108,7 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         break;
       }
 
-      case '/':
-      {
+      case '/': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
@@ -136,7 +135,7 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         break;
       }
 
-      case '&':{
+      case '&': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
@@ -148,8 +147,8 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         }
         break;
       }
-      
-      case '|':{
+
+      case '|': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
@@ -183,7 +182,7 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         break;
       }
 
-      case '=':{
+      case '=': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
@@ -193,7 +192,7 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         break;
       }
 
-      case '<':{
+      case '<': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
@@ -213,7 +212,7 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
         break;
       }
 
-      case '!':{
+      case '!': {
         if (s.size() >= 1) { // TODO: what should happen if this fails
           auto operand = s.top();
           s.pop();
@@ -237,25 +236,33 @@ std::string evaluateString(std::string &notEvaluated, std::vector<int> args) {
           decimalNumberToBe += *curr;
           curr++;
         }
-        s.push(std::stoi(decimalNumberToBe));
+        s.push(std::stoi(decimalNumberToBe)); // DOUBT: should this
+                                              // 'decimalNumberToBe' pushed to
+                                              // stack or appended to answer ?
         break;
       }
 
-      case 'c':{
+      case 'c': {
         auto poppedVal = std::to_string(s.top());
         s.pop();
         answer += poppedVal;
         break;
       }
 
-      case 's':{
+      case 's': {
         // DOUBT: Should pop the whole stack or only the topmost item ?
         // for now poppping the whole stack.
-        while(!s.empty()){
+        while (!s.empty()) {
           answer += std::to_string(s.top());
           s.pop();
         }
         break;
+      }
+
+      case 'l': {
+        auto poppedVal = std::to_string(s.top());
+        s.pop();
+        s.push(static_cast<int>(poppedVal.size()));
       }
 
       default:
