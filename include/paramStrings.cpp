@@ -14,8 +14,10 @@ enum class base
   s = 's'
 };
 
+
+
 std::string evaluateString(const std::string &notEvaluated,
-                           std::vector<int> args)
+                           std::vector<int> args = {})
 {
 
   std::string answer;
@@ -24,7 +26,7 @@ std::string evaluateString(const std::string &notEvaluated,
 
   for (auto curr = notEvaluated.begin(); curr != notEvaluated.end();)
   {
-    std::cout << "\n\n    current char is: " << *curr;
+    // std::cout << "\n\n    current char is: " << *curr;
 
     if (*curr != '%')
     {
@@ -49,7 +51,8 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case 'd':
       {
-        auto top = static_cast<char>(s.top());
+        // TODO: Are you sure to add 48 ?
+        auto top = std::to_string(s.top()); 
         s.pop();
         answer += top;
         break;
@@ -451,7 +454,7 @@ std::string evaluateString(const std::string &notEvaluated,
         break;
       }
 
-      std::cout << "\n  answer is: " << answer;
+      // std::cout << "\n  answer is: " << answer;
     }
 
     curr++;
@@ -460,19 +463,20 @@ std::string evaluateString(const std::string &notEvaluated,
   return answer;
 }
 
-int main()
-{
+// int main()
+// {
 
-  std::string str = "\\E]4;%p1%d;rgb\\:%p2%{255}%*%{1000}%/%2.2X/"
-                    "%p3%{255}%*%{1000}%/%2.2X/%p4%{255}%*%{1000}%/%2.2X\E\\";
+//   std::string str = "\\E]4;%p1%d;rgb\\:%p2%{255}%*%{1000}%/%2.2X/"
+//                     "%p3%{255}%*%{1000}%/%2.2X/%p4%{255}%*%{1000}%/%2.2X\E\\";
 
-  // = "%tushar";
-  // std::cout << "Enter the string to parse: ";
-  // std::cin >> str;
+//   // = "%tushar";
+//   // std::cout << "Enter the string to parse: ";
+//   // std::cin >> str;
 
-  auto res = evaluateString(str, {1, 2, 3, 4});
+//   auto res = evaluateString(str, {1, 2, 3, 4});
 
-  std::cout << "    evaluated String res is: " << res << '\n';
+//   std::cout << "    evaluated String res is: " << res << '\n';
 
-  return 0;
-}
+
+//   return 0;
+// }
