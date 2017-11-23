@@ -5,192 +5,147 @@
 #include <typeinfo>
 #include <vector>
 
-enum class base
-{
-  d = 'd',
-  o = 'o',
-  x = 'x',
-  X = 'X',
-  s = 's'
-};
+enum class base { d = 'd', o = 'o', x = 'x', X = 'X', s = 's' };
 
 
 
 std::string evaluateString(const std::string &notEvaluated,
-                           std::vector<int> args = {})
-{
+                           std::vector<int> args = {}) {
 
   std::string answer;
   std::stack<int> s;
   std::map<std::string, int> vars;
 
-  for (auto curr = notEvaluated.begin(); curr != notEvaluated.end();)
-  {
+  for (auto curr = notEvaluated.begin(); curr != notEvaluated.end();) {
     // std::cout << "\n\n    current char is: " << *curr;
 
-    if (*curr != '%')
-    {
+    if (*curr != '%') {
 
       answer += *curr;
       // curr++;
-    }
-    else
-    {
+    } else {
       curr++;
 
-      switch (*curr)
-      {
+      switch (*curr) {
 
-      case '\'':
-      {
+      case '\'': {
         auto constCharASCIIVal = static_cast<int>(*++curr) - 48 - 1;
         s.push(constCharASCIIVal);
         curr++;
         break;
       }
 
-      case 'd':
-      {
-        // TODO: Are you sure to add 48 ?
-        auto top = std::to_string(s.top()); 
+      case 'd': {
+        auto top = std::to_string(s.top());
         s.pop();
         answer += top;
+
         break;
       }
 
-      case 't':
-      {
-        if (!s.empty())
-        { // TODO: what should happen if stack is empty
+      case 't': {
+        if (!s.empty()) { // TODO: what should happen if stack is empty
           auto top = s.top();
           s.pop();
-        }
-        else
-        {
+        } else {
           throw std::runtime_error("Stack empty.. Invalid expression to parse");
         }
         break;
       }
 
-      case '%':
-      {
+      case '%': {
         answer += '%';
         break;
       }
 
-      case 'p':
-      {
+      case 'p': {
         auto paramNum = static_cast<int>(*++curr) - 48 - 1;
-        if (paramNum < args.size())
-        { // TODO: what should happen if this fails
+        if (paramNum < args.size()) { // TODO: what should happen if this fails
           s.push(args[paramNum]);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Parameter number out of range.. Invalid expression to parse");
         }
         break;
       }
 
-      case 'P':
-      {
+      case 'P': {
         auto varName = std::string(1, *++curr);
-        if (!s.empty())
-        { // TODO: what should happen if stack is empty
+        if (!s.empty()) { // TODO: what should happen if stack is empty
           auto top = s.top();
           s.pop();
           vars[varName] = top;
-        }
-        else
-        {
+        } else {
           throw std::runtime_error("Stack empty.. Invalid expression to parse");
         }
         break;
       }
 
-      case 'g':
-      { // Both 'g' cases handled here
+      case 'g': { // Both 'g' cases handled here
         auto varName = std::string(1, *++curr);
         auto keyIter = vars.find(varName);
-        if (keyIter != vars.end())
-        { // TODO: what happens if this fails
+        if (keyIter != vars.end()) { // TODO: what happens if this fails
           s.push(keyIter->second);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Invalid Variable.. Invalid expression to parse");
         }
         break;
       }
 
-      case '+':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '+': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.pop();
           s.push(operand1 + operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '-':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '-': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.pop();
           s.push(operand1 - operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '*':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '*': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.pop();
           s.push(operand1 * operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '/':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '/': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.pop();
-          s.push(operand1 / operand2);
-        }
-        else
-        {
+          if (operand1 == 0) {
+            throw std::runtime_error("Division by zero attempted");
+          }
+          s.push(operand2 / operand1);
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
@@ -199,180 +154,144 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case 'm': // NOTE: special char for mod
       {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.pop();
           s.push(operand1 % operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '&':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '&': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.pop();
           s.push(operand1 & operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '|':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '|': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.pop();
           s.push(operand1 | operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '^':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '^': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.pop();
           s.push(operand1 ^ operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case 'i':
-      {
-        if (args.size() >= 2)
-        { // TODO: what should happen if this fails
-          args[0] += 1;
-          args[1] += 1;
-        }
-        else
-        {
+      case 'i': {
+        if (args.size() >= 1) { // TODO: what should happen if this fails
+          // Should do by using .at() or use custom if-else's ?
+          try {
+            args.at(0) += 1;
+            args.at(1) += 1;
+          } catch (const std::out_of_range) {
+            // Should anything be done with this exception, I don't think so.
+          }
+        } else {
           throw std::runtime_error(
               "Parameter number out of range.. Invalid expression to parse");
         }
         break;
       }
 
-      case '=':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '=': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.push(operand1 == operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '<':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '<': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.push(operand1 < operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '>':
-      {
-        if (s.size() >= 2)
-        { // TODO: what should happen if this fails
+      case '>': {
+        if (s.size() >= 2) { // TODO: what should happen if this fails
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
           s.push(operand1 > operand2);
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 2.. Invalid expression to parse");
         }
         break;
       }
 
-      case '!':
-      {
-        if (s.size() >= 1)
-        { // TODO: what should happen if this fails
+      case '!': {
+        if (s.size() >= 1) { // TODO: what should happen if this fails
           auto operand = s.top();
           s.pop();
           s.push(!operand); // TODO: confirm this !operand
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 1.. Invalid expression to parse");
         }
         break;
       }
 
-      case '~':
-      {
-        if (s.size() >= 1)
-        { // TODO: what should happen if this fails
+      case '~': {
+        if (s.size() >= 1) { // TODO: what should happen if this fails
           auto operand = s.top();
           s.pop();
           s.push(~operand); // TODO: confirm this ~operand and need to use
                             // unsigned int
-        }
-        else
-        {
+        } else {
           throw std::runtime_error(
               "Number of operands less than 1.. Invalid expression to parse");
         }
         break;
       }
 
-      case '{':
-      {
+      case '{': {
         std::string decimalNumberToBe;
-        while (*++curr != '}')
-        {
+        while (*++curr != '}') {
           decimalNumberToBe += *curr;
         }
         s.push(std::stoi(decimalNumberToBe)); // DOUBT: should this
@@ -381,8 +300,7 @@ std::string evaluateString(const std::string &notEvaluated,
         break;
       }
 
-      case 'c':
-      {
+      case 'c': {
         // DOUBT: According to the new man page the top-most stack value should
         // be popped as character and appended to answer. So if top of stack
         // contains 3 then '3' should be appended to output or ascii value
@@ -393,21 +311,18 @@ std::string evaluateString(const std::string &notEvaluated,
         break;
       }
 
-      case 's':
-      {
+      case 's': {
         // DOUBT: Should pop the whole stack or only the topmost item ?
         // for now poppping the whole stack.
         // DOUBT: same doubt as case 'c'
-        while (!s.empty())
-        {
+        while (!s.empty()) {
           answer += static_cast<char>(s.top());
           s.pop();
         }
         break;
       }
 
-      case 'l':
-      {
+      case 'l': {
         auto poppedVal = std::to_string(s.top());
         s.pop();
         s.push(poppedVal.size());
@@ -415,22 +330,18 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case ':':
       case ' ':
-      case '#':
-      {
+      case '#': {
         // TODO: check the validity of this parsing algo
         std::string numberToBe;
         curr++;
-        if (*curr == '+' || *curr == '-')
-        {
+        if (*curr == '+' || *curr == '-') {
           numberToBe += *curr;
           curr++;
         }
         char base{'d'};
-        while (*curr != '%' && curr != notEvaluated.end())
-        {
+        while (*curr != '%' && curr != notEvaluated.end()) {
           if (*curr == 'd' || *curr == 'o' || *curr == 'x' || *curr == 'X' ||
-              *curr == 's')
-          {
+              *curr == 's') {
             base = *curr;
             break;
           }
@@ -443,8 +354,7 @@ std::string evaluateString(const std::string &notEvaluated,
         break;
       }
 
-      case '?':
-      {
+      case '?': {
         throw std::runtime_error("If-else not yet implemented !!");
       }
 
@@ -476,7 +386,6 @@ std::string evaluateString(const std::string &notEvaluated,
 //   auto res = evaluateString(str, {1, 2, 3, 4});
 
 //   std::cout << "    evaluated String res is: " << res << '\n';
-
 
 //   return 0;
 // }
