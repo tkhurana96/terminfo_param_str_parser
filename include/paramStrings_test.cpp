@@ -69,7 +69,7 @@ int main(){
     // Observation1: Negative values don't work with cuf, cup, cuu, hpa, il, indn, rin caps(maybe -ve values don't work at all)
     // Observation2: Goto_col(hpa) cap only needs one arg, but %i increments params if atleast 2 params are present,
     // i think %i should check existence individually for each of the first two args [FIXED].
-    std::map<std::string, std::tuple<std::string, std::vector<int>, std::string>> param_caps{
+    std::map<std::string, std::tuple<std::string, std::vector<valType>, std::string>> param_caps{
         // {"test_name", {"test_input", test_input_args, "expected_output"}}
         {"cursor_left(cub)", {"\E[%p1%dD", {5}, "\E[5D"}},
         {"cursor_down(cud)", {"\E[%p1%dB", {12}, "\E[12B"}},
@@ -99,7 +99,7 @@ int main(){
         {"scroll_forward(indn)_2", {"\E[%p1%dS", {-10}, "\E[-10S"}}, // Wrong test if not compared with ncurses behavior
         // {"init_color(initc)", {"\E]4;%p1%d;rgb\:%p2%{255}%*%{1000}%/%2.2X/%p3%{255}%*%{1000}%/%2.2X/%p4%{255}%*%{1000}%/%2.2X\E\\", {7,50, 50, 50}, 
         // "\E]4;7;rgb\:"}}
-        {"scroll_back(rin)", {"\E[%p1%dT", {4}, "\E[4T"}},
+        {"scroll_back(rin)", {"\E[%p1%dT", {4}, "\E[4T"}}
         // {"set_bg_color(setab)", {"", {}, ""}}
         // {"user_string6(u6)", {"\E[%i%d;%dR", {12, 13}, "\E[13;14R"}}
     };
