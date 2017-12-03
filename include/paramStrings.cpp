@@ -3,12 +3,20 @@
 #include <stack>
 #include <string>
 #include <typeinfo>
-#include <vector>
 #include <variant>
+#include <vector>
 
 enum class base { d = 'd', o = 'o', x = 'x', X = 'X', s = 's' };
 
 using valType = std::variant<int, std::string>;
+
+auto isTruthy(valType arg) {
+  if (std::holds_alternative<int>(arg)) {
+    return std::get<int>(arg) != 0 ? true : false;
+  } else if (std::holds_alternative<std::string>(arg)) {
+    return std::get<std::string>(arg).size() > 0 ? true : false;
+  }
+}
 
 std::string evaluateString(const std::string &notEvaluated,
                            std::vector<valType> args = {}) {
@@ -16,6 +24,7 @@ std::string evaluateString(const std::string &notEvaluated,
   std::string answer;
   // std::stack<int> s;
   std::stack<valType> s;
+  std::stack<bool> ifElseRes;
   std::map<std::string, valType> vars;
 
   for (auto curr = notEvaluated.begin(); curr != notEvaluated.end();) {
@@ -46,7 +55,7 @@ std::string evaluateString(const std::string &notEvaluated,
         auto top = s.top();
         s.pop();
 
-        if (std::holds_alternative<int>(top)){
+        if (std::holds_alternative<int>(top)) {
           auto res = std::to_string(std::get<int>(top));
           answer += res;
         } else {
@@ -58,10 +67,83 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case 't': {
         if (!s.empty()) { // TODO: what should happen if stack is empty
+
           auto top = s.top();
           s.pop();
+
+          if (isTruthy(top)) {
+            // push a false onto the stack to let corresponding else know to not
+            // execute
+            // ifElseRes.push(false);
+            // push a true onto the stack to let the corresponding else_if's and
+            // else's to know that some branch before them executed do nothing
+            // auto someBranchBeforeExecuted = ifElseRes.top();
+            // if (not someBranchBeforeExecuted)
+            // {ifElseRes.pop();ifElseRes.push(true);} the following else case
+            // shouldn't arise else { throw runtime_error("For now throwing
+            // error if multiple else-if's satisfied"); }
+            ifElseRes.top() = true;
+            // and let the following expressions parse
+          } else {
+            // ifElseRes.push(false);
+            // move curr untill it starts pointing to this then's else
+            // maintain integer nesting variable to count inner if-else's if any
+            auto nesting = 0;
+            for (;; curr++) {
+              if (*curr == '%') {
+                auto next = *(curr + 1);
+
+                if (next == '?') {
+                  nesting++;
+                } else if ((next == 'e' or next == ';') and nesting) {
+                  nesting--;
+                } else if ((next == 'e' or next == ';') and not nesting) {
+                  std::advance(curr, -1); // check for UB
+                  break;                  // check if this break works ?
+                }
+              }
+            }
+          }
         } else {
           throw std::runtime_error("Stack empty.. Invalid expression to parse");
+        }
+        break;
+      }
+
+      case 'e': {
+        if (!ifElseRes.empty()) {
+          auto someBranchBeforeExecuted = ifElseRes.top();
+
+          if (someBranchBeforeExecuted) {
+            // move curr unitll it starts pointing to this else's end
+            // maintain integer nesting variable to count inner if-else's
+            auto nesting = 0;
+            for (;; curr++) {
+              if (*curr == '%') {
+                auto next = *(curr + 1); // what should happen if this fails
+
+                if (next == '?') {
+                  nesting++;
+                } else if (next == ';' and nesting) {
+                  nesting--;
+                } else if ((next == ';' or next == 'e') and not nesting) {
+                  std::advance(curr, -1); // check for UB
+                  break;                  // check if this break works ?
+                }
+              }
+            }
+          }
+        } else {
+          throw std::runtime_error("Invalid else found");
+        }
+        break;
+      }
+
+      case ';': {
+        if (not ifElseRes.empty()) {
+          ifElseRes.pop(); // what should happen if this fails ?
+        } else {
+          throw std::runtime_error("Invalid ending of if-else found");
         }
         break;
       }
@@ -118,20 +200,26 @@ std::string evaluateString(const std::string &notEvaluated,
           s.pop();
           auto operand2 = s.top();
           s.pop();
-          
-          // Oooh... the plus operation is valid for both integer and strings.. what to do now ?
-          if (operand1.index() == operand2.index()) // if they are holding values of same type
+
+          // Oooh... the plus operation is valid for both integer and strings..
+          // what to do now ?
+          if (operand1.index() ==
+              operand2.index()) // if they are holding values of same type
           {
             // improve the readibility of the code that follows
-            if (std::holds_alternative<std::string>(operand1) and std::holds_alternative<std::string>(operand2)){
-              auto res = std::get<std::string>(operand1) + std::get<std::string>(operand2);
-              s.push(valType(res));  
-            } else if(std::holds_alternative<int>(operand1) and std::holds_alternative<int>(operand2)){
+            if (std::holds_alternative<std::string>(operand1) and
+                std::holds_alternative<std::string>(operand2)) {
+              auto res = std::get<std::string>(operand1) +
+                         std::get<std::string>(operand2);
+              s.push(valType(res));
+            } else if (std::holds_alternative<int>(operand1) and
+                       std::holds_alternative<int>(operand2)) {
               auto res = std::get<int>(operand1) + std::get<int>(operand2);
-              s.push(valType(res));  
+              s.push(valType(res));
             }
           } else { // TODO: what should happen if they are of different types
-            throw std::runtime_error("Addition operation applied on two different types of operands");
+            throw std::runtime_error("Addition operation applied on two "
+                                     "different types of operands");
           }
 
         } else {
@@ -153,11 +241,14 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (std::holds_alternative<int>(operand1) and std::holds_alternative<int>(operand2)){
-            auto res = std::get<int>(operand1) - std::get<int>(operand2);
+          if (std::holds_alternative<int>(operand1) and
+              std::holds_alternative<int>(operand2)) {
+            auto res = std::get<int>(operand2) - std::get<int>(operand1);
             s.push(valType(res));
-          } else { // TODO: what should happen if either or both of them are string types ?
-            throw std::runtime_error("Invlalid operands for subtraction operation");
+          } else { // TODO: what should happen if either or both of them are
+                   // string types ?
+            throw std::runtime_error(
+                "Invlalid operands for subtraction operation");
           }
         } else {
           throw std::runtime_error(
@@ -178,11 +269,14 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (std::holds_alternative<int>(operand1) and std::holds_alternative<int>(operand2)){
+          if (std::holds_alternative<int>(operand1) and
+              std::holds_alternative<int>(operand2)) {
             auto res = std::get<int>(operand1) * std::get<int>(operand2);
             s.push(valType(res));
-          } else { // TODO: what should happen if either or both of them are string types ?
-            throw std::runtime_error("Invlalid operands for multiplication operation");
+          } else { // TODO: what should happen if either or both of them are
+                   // string types ?
+            throw std::runtime_error(
+                "Invlalid operands for multiplication operation");
           }
         } else {
           throw std::runtime_error(
@@ -206,15 +300,18 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (std::holds_alternative<int>(operand1) and std::holds_alternative<int>(operand2)){
-            if (std::get<int>(operand1) == 0){
+          if (std::holds_alternative<int>(operand1) and
+              std::holds_alternative<int>(operand2)) {
+            if (std::get<int>(operand1) == 0) {
               throw std::runtime_error("Division by zero attempted");
             } else {
               auto res = std::get<int>(operand2) / std::get<int>(operand1);
               s.push(valType(res));
             }
-          } else { // TODO: what should happen if either or both of them are string types ?
-            throw std::runtime_error("Invlalid operands for division operation");
+          } else { // TODO: what should happen if either or both of them are
+                   // string types ?
+            throw std::runtime_error(
+                "Invlalid operands for division operation");
           }
         } else {
           throw std::runtime_error(
@@ -236,10 +333,12 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (std::holds_alternative<int>(operand1) and std::holds_alternative<int>(operand2)){
-            auto res = std::get<int>(operand1) % std::get<int>(operand2);
+          if (std::holds_alternative<int>(operand1) and
+              std::holds_alternative<int>(operand2)) {
+            auto res = std::get<int>(operand2) % std::get<int>(operand1);
             s.push(valType(res));
-          } else { // TODO: what should happen if either or both of them are string types ?
+          } else { // TODO: what should happen if either or both of them are
+                   // string types ?
             throw std::runtime_error("Invlalid operands for mod operation");
           }
         } else {
@@ -262,11 +361,14 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (std::holds_alternative<int>(operand1) and std::holds_alternative<int>(operand2)){
+          if (std::holds_alternative<int>(operand1) and
+              std::holds_alternative<int>(operand2)) {
             auto res = std::get<int>(operand1) & std::get<int>(operand2);
             s.push(valType(res));
-          } else { // TODO: what should happen if either or both of them are string types ?
-            throw std::runtime_error("Invlalid operands for bitwise-and operation");
+          } else { // TODO: what should happen if either or both of them are
+                   // string types ?
+            throw std::runtime_error(
+                "Invlalid operands for bitwise-and operation");
           }
         } else {
           throw std::runtime_error(
@@ -288,11 +390,14 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (std::holds_alternative<int>(operand1) and std::holds_alternative<int>(operand2)){
+          if (std::holds_alternative<int>(operand1) and
+              std::holds_alternative<int>(operand2)) {
             auto res = std::get<int>(operand1) | std::get<int>(operand2);
             s.push(valType(res));
-          } else { // TODO: what should happen if either or both of them are string types ?
-            throw std::runtime_error("Invlalid operands for bitwise-or operation");
+          } else { // TODO: what should happen if either or both of them are
+                   // string types ?
+            throw std::runtime_error(
+                "Invlalid operands for bitwise-or operation");
           }
         } else {
           throw std::runtime_error(
@@ -314,10 +419,12 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (std::holds_alternative<int>(operand1) and std::holds_alternative<int>(operand2)){
+          if (std::holds_alternative<int>(operand1) and
+              std::holds_alternative<int>(operand2)) {
             auto res = std::get<int>(operand1) ^ std::get<int>(operand2);
             s.push(valType(res));
-          } else { // TODO: what should happen if either or both of them are string types ?
+          } else { // TODO: what should happen if either or both of them are
+                   // string types ?
             throw std::runtime_error("Invlalid operands for xor operation");
           }
         } else {
@@ -331,21 +438,21 @@ std::string evaluateString(const std::string &notEvaluated,
         if (args.size() >= 1) { // TODO: what should happen if this fails
           // Should do by using .at() or use custom if-else's ?
           // try {
-            // args.at(0) += 1;
-            // args.at(1) += 1;
+          // args.at(0) += 1;
+          // args.at(1) += 1;
           // } catch (const std::out_of_range) {
           //   // Should anything be done with this exception, I don't think so.
           // }
-          try{
-              if (std::holds_alternative<int>(args.at(0))){
-                  std::get<int>(args.at(0)) += 1;
-                } 
-              if (std::holds_alternative<int>(args.at(1))){
-                  std::get<int>(args.at(1)) += 1;
-              }
-            } catch(const std::out_of_range){
-              // should anything be done with this exception, I don't think so.
+          try {
+            if (std::holds_alternative<int>(args.at(0))) {
+              std::get<int>(args.at(0)) += 1;
             }
+            if (std::holds_alternative<int>(args.at(1))) {
+              std::get<int>(args.at(1)) += 1;
+            }
+          } catch (const std::out_of_range) {
+            // should anything be done with this exception, I don't think so.
+          }
         } else {
           throw std::runtime_error(
               "Parameter number out of range.. Invalid expression to parse");
@@ -380,11 +487,13 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (operand1.index() == operand2.index()){ // if they are of same type
-            auto res = operand1 < operand2;
+          if (operand1.index() ==
+              operand2.index()) { // if they are of same type
+            auto res = operand2 < operand1;
             s.push(valType(res));
           } else {
-            throw std::runtime_error("Invalid operands for greater-than opearator");
+            throw std::runtime_error(
+                "Invalid operands for greater-than opearator");
           }
         } else {
           throw std::runtime_error(
@@ -406,11 +515,13 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand2 = s.top();
           s.pop();
 
-          if (operand1.index() == operand2.index()){ // if they are of same type
-            auto res = operand1 > operand2;
+          if (operand1.index() ==
+              operand2.index()) { // if they are of same type
+            auto res = operand2 > operand1;
             s.push(valType(res));
           } else {
-            throw std::runtime_error("Invalid operands for lesser-than opearator");
+            throw std::runtime_error(
+                "Invalid operands for lesser-than opearator");
           }
         } else {
           throw std::runtime_error(
@@ -430,13 +541,23 @@ std::string evaluateString(const std::string &notEvaluated,
         //   if (std::holds_alternative<int>(operand)){
         //     s.push(valType(!operand));
         //   } else {
-        //     throw std::runtime_error("Invalid operand i.e. string for not(!) operator")
+        //     throw std::runtime_error("Invalid operand i.e. string for not(!)
+        //     operator")
         //   }
         // } else {
         //   throw std::runtime_error(
-        //       "Number of operands less than 1.. Invalid expression to parse");
+        //       "Number of operands less than 1.. Invalid expression to
+        //       parse");
         // }
-        std::cout << "logical-not not yet implemented\n";
+        if (s.size() >= 1) {
+          auto top = s.top();
+          s.pop();
+          s.push(valType(!isTruthy(top)));
+        } else {
+          throw std::runtime_error(
+              "Number of operands less than 1.. Invalid expression to parse");
+        }
+        // std::cout << "logical-not not yet implemented\n";
         break;
       }
 
@@ -450,11 +571,12 @@ std::string evaluateString(const std::string &notEvaluated,
           auto operand = s.top();
           s.pop();
 
-          if (std::holds_alternative<int>(operand)){
+          if (std::holds_alternative<int>(operand)) {
             auto res = ~(std::get<int>(operand));
             s.push(valType(res));
           } else {
-            throw std::runtime_error("Invalid operand(string) for bitwise-not operator");
+            throw std::runtime_error(
+                "Invalid operand(string) for bitwise-not operator");
           }
         } else {
           throw std::runtime_error(
@@ -473,7 +595,7 @@ std::string evaluateString(const std::string &notEvaluated,
         std::string decimalNumberToBe;
         while (*++curr != '}') {
           decimalNumberToBe += *curr;
-        } 
+        }
         s.push(valType(std::stoi(decimalNumberToBe)));
         break;
       }
@@ -491,7 +613,7 @@ std::string evaluateString(const std::string &notEvaluated,
         auto top = s.top();
         s.pop();
 
-        if (std::holds_alternative<int>(top)){
+        if (std::holds_alternative<int>(top)) {
           auto charCorrespondingToTop = static_cast<char>(std::get<int>(top));
           answer += charCorrespondingToTop;
         } else {
@@ -512,7 +634,7 @@ std::string evaluateString(const std::string &notEvaluated,
         auto top = s.top();
         s.pop();
 
-        if (std::holds_alternative<std::string>(top)){
+        if (std::holds_alternative<std::string>(top)) {
           answer += std::get<std::string>(top);
         } else {
           throw std::runtime_error("invalid operand for %s encoding");
@@ -528,7 +650,7 @@ std::string evaluateString(const std::string &notEvaluated,
         auto top = s.top();
         s.pop();
 
-        if (std::holds_alternative<std::string>(top)){
+        if (std::holds_alternative<std::string>(top)) {
           auto res = std::get<std::string>(top).size();
           s.push(valType(res));
         } else {
@@ -563,8 +685,30 @@ std::string evaluateString(const std::string &notEvaluated,
         break;
       }
 
+      case 'A': {
+        auto operand1 = s.top();
+        s.pop();
+        auto operand2 = s.top();
+        s.pop();
+
+        s.push(valType(isTruthy(operand1) and isTruthy(operand2)));
+        break;
+      }
+
+      case 'O': {
+        auto operand1 = s.top();
+        s.pop();
+        auto operand2 = s.top();
+        s.pop();
+
+        s.push(valType(isTruthy(operand1) or isTruthy(operand2)));
+        break;
+      }
+
       case '?': {
-        throw std::runtime_error("If-else not yet implemented !!");
+        // let's parse
+        ifElseRes.push(false);
+        break;
       }
 
       default:
