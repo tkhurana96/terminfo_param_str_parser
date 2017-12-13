@@ -1,7 +1,7 @@
 #include "paramStrings.cpp"
 #include <iostream>
 #include <map>
-#include <ncurses.h>
+// #include <ncurses.h>
 
 // template<size_t> struct counter { };
 
@@ -43,7 +43,7 @@ int main() {
       {"clear_to_screen_end", "\E[J"},
       {"clear_to_eol", "\E[K"},
       {"clear_to_bol", "\E[1K"},
-      {"blink","\E[5m"},
+      {"blink", "\E[5m"},
       {"bold", "\E[1m"},
       {"back_tab", "\E[Z"},
       {"carriage_return", "\r"},
@@ -60,7 +60,7 @@ int main() {
       {"tab", "^I"},
       {"set_tab", "\EH"},
       {"insert_line", "\E[L"},
-      {"scroll_text_up","\n"},
+      {"scroll_text_up", "\n"},
       {"blank_mode", "\E[8m"},
       {"init_string", "\E[!p\E[?3;4l\E[4l\E>"},
       {"shifted_del_char", "\E[3;2~"}
@@ -85,75 +85,122 @@ int main() {
           {"cursor_up(cuu)_1", {"\E[%p1%dA", {17}, "\E[17A"}},
           {"cursor_up(cuu)_2", {"\E[%p1%dA", {-20}, "\E[-20A"}}, // Wrong
           // test if not compared with ncurses behavior
-          {"move_cursor(cup)_1", {"\E[%i%p1%d;%p2%dH", {10, 20},"\E[11;21H"}},
-          {"move_cursor(cup)_2", {"\E[%i%p1%d;%p2%dH", {-5, -45}, "\E[-4;-44H"}}, // Wrong test if not compared with ncurses behavior
-          {"delete_char(dch)_1", {"\E[%p1%dP", {5}, "\E[5P"}}, // Wrong test if not compared with ncurses behavior
-          {"delete_char(dch)_2", {"\E[%p1%dP", {-7}, "\E[-7P"}}, // Wrong test if not compared with ncurses behavior
-          {"delete_char(dch)_3", {"\E[%p1%dP", {100}, "\E[100P"}}, // Wrong test if not compared with ncurses behavior
-          {"delete_lines(dl)_1", {"\E[%p1%dM", {6}, "\E[6M"}}, // Wrong test if not compared with ncurses behavior
-          {"delete_lines(dl)_2", {"\E[%p1%dM", {-8}, "\E[-8M"}}, // Wrong test if not compared with ncurses behavior
-          {"delete_lines(dl)_3", {"\E[%p1%dM", {100}, "\E[100M"}}, // Wrong test if not compared with ncurses behavior
-          {"erase_chars(ech)_1", {"\E[%p1%dX", {10}, "\E[10X"}}, // Wrong test if not compared with ncurses behavior
-          {"erase_chars(ech)_2", {"\E[%p1%dX", {-5}, "\E[-5X"}}, // Wrong test if not compared with ncurses behavior
-          {"erase_chars(ech)_3", {"\E[%p1%dX", {110}, "\E[110X"}}, // Wrong test if not compared with ncurses behavior
+          {"move_cursor(cup)_1", {"\E[%i%p1%d;%p2%dH", {10, 20}, "\E[11;21H"}},
+          {"move_cursor(cup)_2",
+           {"\E[%i%p1%d;%p2%dH",
+            {-5, -45},
+            "\E[-4;-44H"}}, // Wrong test if not compared with ncurses behavior
+          {"delete_char(dch)_1",
+           {"\E[%p1%dP",
+            {5},
+            "\E[5P"}}, // Wrong test if not compared with ncurses behavior
+          {"delete_char(dch)_2",
+           {"\E[%p1%dP",
+            {-7},
+            "\E[-7P"}}, // Wrong test if not compared with ncurses behavior
+          {"delete_char(dch)_3",
+           {"\E[%p1%dP",
+            {100},
+            "\E[100P"}}, // Wrong test if not compared with ncurses behavior
+          {"delete_lines(dl)_1",
+           {"\E[%p1%dM",
+            {6},
+            "\E[6M"}}, // Wrong test if not compared with ncurses behavior
+          {"delete_lines(dl)_2",
+           {"\E[%p1%dM",
+            {-8},
+            "\E[-8M"}}, // Wrong test if not compared with ncurses behavior
+          {"delete_lines(dl)_3",
+           {"\E[%p1%dM",
+            {100},
+            "\E[100M"}}, // Wrong test if not compared with ncurses behavior
+          {"erase_chars(ech)_1",
+           {"\E[%p1%dX",
+            {10},
+            "\E[10X"}}, // Wrong test if not compared with ncurses behavior
+          {"erase_chars(ech)_2",
+           {"\E[%p1%dX",
+            {-5},
+            "\E[-5X"}}, // Wrong test if not compared with ncurses behavior
+          {"erase_chars(ech)_3",
+           {"\E[%p1%dX",
+            {110},
+            "\E[110X"}}, // Wrong test if not compared with ncurses behavior
           {"goto_col(hpa)_1", {"\E[%i%p1%dG", {8}, "\E[9G"}},
-          {"goto_col(hpa)_2", {"\E[%i%p1%dG", {-3}, "\E[-2G"}}, // Wrong test if not compared with ncurses behavior
-          {"goto_col(hpa)_3", {"\E[%i%p1%dG", {10, 20}, "\E[11G"}}, // Wrong test if not compared with ncurses behavior
-          // // {"insert_chars(ich)_1", {"\E[%p1%d@", {}, ""}}, // Wrong test if not compared with ncurses behavior
+          {"goto_col(hpa)_2",
+           {"\E[%i%p1%dG",
+            {-3},
+            "\E[-2G"}}, // Wrong test if not compared with ncurses behavior
+          {"goto_col(hpa)_3",
+           {"\E[%i%p1%dG",
+            {10, 20},
+            "\E[11G"}}, // Wrong test if not compared with ncurses behavior
+          // // {"insert_chars(ich)_1", {"\E[%p1%d@", {}, ""}}, // Wrong test if
+          // not compared with ncurses behavior
           {"insert_chars(ich)_2", {"\E[%p1%d@", {7}, "\E[7@"}},
           {"insert_lines(il)_1", {"\E[%p1%dL", {5}, "\E[5L"}},
-          {"insert_lines(il)_2", {"\E[%p1%dL", {-5}, "\E[-5L"}}, // Wrong test if not compared with ncurses behavior
+          {"insert_lines(il)_2",
+           {"\E[%p1%dL",
+            {-5},
+            "\E[-5L"}}, // Wrong test if not compared with ncurses behavior
           {"scroll_forward(indn)_1", {"\E[%p1%dS", {10}, "\E[10S"}},
-          {"scroll_forward(indn)_2", {"\E[%p1%dS", {-10}, "\E[-10S"}}, // Wrong test if not compared with ncurses behavior
-          // {"init_color(initc)", {"\E]4;%p1%d;rgb\:%p2%{255}%*%{1000}%/%2.2X/%p3%{255}%*%{1000}%/%2.2X/%p4%{255}%*%{1000}%/%2.2X\E\\",{7,50, 50, 50}, "\E]4;7;rgb\:"}},
+          {"scroll_forward(indn)_2",
+           {"\E[%p1%dS",
+            {-10},
+            "\E[-10S"}}, // Wrong test if not compared with ncurses behavior
+          {"init_color(initc)",
+           {"\E]4;%p1%d;rgb\:%p2%{255}%*%{1000}%/%2.2X/%p3%{255}%*%{1000}%/"
+            "%2.2X/%p4%{255}%*%{1000}%/%2.2X\E\\",
+            {7, 50, 50, 50},
+            "\E]4;7;rgb\:"}},
           {"scroll_back(rin)", {"\E[%p1%dT", {4}, "\E[4T"}},
           // // {"set_bg_color(setab)", {"", {}, ""}}
           // {"user_string6(u6)", {"\E[%i%d;%dR", {12, 13}, "\E[13;14R"}},
-            {"if", {"%?%{50}%p1%<%t%{100}%p1%*%d%;", {56}, "5600"}},
-            {"if_else_1",
-             {"%?%p1%{2}%m%{0}%=%t%p2%s%e%p3%s%;",
-              {5, "divisible by 2", "not divisible by 2"},
-              "not divisible by 2"}},
-            {"if_else_2",
-             {"%?%p1%{2}%m%{0}%=%t%p2%s%e%p3%s%;",
-              {50, "divisible by 2", "not divisible by 2"},
-              "divisible by 2"}},
-            {"if_else_3",
-             {"%?%p1%{2}%m%{0}%=%t%p2%s%e%p3%s%;",
-              {-8, "divisible by 2", "not divisible by 2"},
-              "divisible by 2"}},
+          {"if", {"%?%{50}%p1%<%t%{100}%p1%*%d%;", {56}, "5600"}},
+          {"if_else_1",
+           {"%?%p1%{2}%m%{0}%=%t%p2%s%e%p3%s%;",
+            {5, "divisible by 2", "not divisible by 2"},
+            "not divisible by 2"}},
+          {"if_else_2",
+           {"%?%p1%{2}%m%{0}%=%t%p2%s%e%p3%s%;",
+            {50, "divisible by 2", "not divisible by 2"},
+            "divisible by 2"}},
+          {"if_else_3",
+           {"%?%p1%{2}%m%{0}%=%t%p2%s%e%p3%s%;",
+            {-8, "divisible by 2", "not divisible by 2"},
+            "divisible by 2"}},
           //   {"only_else", {"%?%e%p1%{100}%*%;", {4}, ""}}, // this should
           //   throw or return empty string ?
-            {"logical_and_1",
-             {"%?%p1%{2}%m%{0}%=%p1%{3}%m%{0}%=%A%t%p2%s%;",
-              {6, "divisible by 2 and 3"},
-              "divisible by 2 and 3"}},
-            {"logical_and_2",
-             {"%?%p1%{5}%m%{0}%=%p1%{2}%m%{0}%=%A%t%p2%s%;",
-              {10, "divisible by 2 and 5"},
-              "divisible by 2 and 5"}},
-            {"logical_or_1",
-             {"%?%p1%{40}%<%p1%{60}%>%O%t%p2%s%e%p3%s%;",
-              {50, "valuable to us", "not valuable to us"},
-              "not valuable to us"}},
-            {"logical_or_2",
-             {"%?%p1%{40}%<%p1%{60}%>%O%t%p2%s%e%p3%s%;",
-              {70, "valuable to us", "not valuable to us"},
-              "valuable to us"}},
-            {"logical_or_3",
-             {"%?%p1%{40}%<%p1%{60}%>%O%t%p2%s%e%p3%s%;",
-              {30, "valuable to us", "not valuable to us"},
-              "valuable to us"}},
-            {"logical_not_1",
-             {"%?%p1%{2}%m%{0}%=%!%t%p2%s%e%p3%s%;",
-              {50, "divisible by 2(false positive)",
-               "not divisible by 2(false negative)"},
-              "not divisible by 2(false negative)"}},
-            {"logical_not_2",
-             {"%?%p1%{2}%m%{0}%=%!%t%p2%s%e%p3%s%;",
-              {35, "divisible by 2(false positive)",
-               "not divisible by 2(false negative)"},
-              "divisible by 2(false positive)"}},
+          {"logical_and_1",
+           {"%?%p1%{2}%m%{0}%=%p1%{3}%m%{0}%=%A%t%p2%s%;",
+            {6, "divisible by 2 and 3"},
+            "divisible by 2 and 3"}},
+          {"logical_and_2",
+           {"%?%p1%{5}%m%{0}%=%p1%{2}%m%{0}%=%A%t%p2%s%;",
+            {10, "divisible by 2 and 5"},
+            "divisible by 2 and 5"}},
+          {"logical_or_1",
+           {"%?%p1%{40}%<%p1%{60}%>%O%t%p2%s%e%p3%s%;",
+            {50, "valuable to us", "not valuable to us"},
+            "not valuable to us"}},
+          {"logical_or_2",
+           {"%?%p1%{40}%<%p1%{60}%>%O%t%p2%s%e%p3%s%;",
+            {70, "valuable to us", "not valuable to us"},
+            "valuable to us"}},
+          {"logical_or_3",
+           {"%?%p1%{40}%<%p1%{60}%>%O%t%p2%s%e%p3%s%;",
+            {30, "valuable to us", "not valuable to us"},
+            "valuable to us"}},
+          {"logical_not_1",
+           {"%?%p1%{2}%m%{0}%=%!%t%p2%s%e%p3%s%;",
+            {50, "divisible by 2(false positive)",
+             "not divisible by 2(false negative)"},
+            "not divisible by 2(false negative)"}},
+          {"logical_not_2",
+           {"%?%p1%{2}%m%{0}%=%!%t%p2%s%e%p3%s%;",
+            {35, "divisible by 2(false positive)",
+             "not divisible by 2(false negative)"},
+            "divisible by 2(false positive)"}},
 
           {"set_bg_color(setab)_1",
            {"\E[%?%p1%{8}%<%t4%p1%d%e%p1%{16}%<%t10%p1%{8}%-%d%e48;5;%p1%d%;m",
@@ -170,13 +217,26 @@ int main() {
             {20},
             "\E[48;5;20m"}},
 
-          {"set_fg_color(setaf)_1", {"\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m", {4}, "\E[34m"}},
+          {"set_fg_color(setaf)_1",
+           {"\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m",
+            {4},
+            "\E[34m"}},
 
-          {"set_fg_color(setaf)_2", {"\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m", {10}, "\E[92m"}},
+          {"set_fg_color(setaf)_2",
+           {"\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m",
+            {10},
+            "\E[92m"}},
 
-          {"set_fg_color(setaf)_3", {"\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m", {20}, "\E[38;5;20m"}},
+          {"set_fg_color(setaf)_3",
+           {"\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m",
+            {20},
+            "\E[38;5;20m"}},
 
-          {"video_attributes_1", {"%?%p9%t\E(0%e\E(B%;\E[0%?%p6%t;1%;%?%p5%t;2%;%?%p2%t;4%;%?%p1%p3%|%t;7%;%?%p4%t;5%;%?%p7%t;8%;m", {10, 20, 30, 40, 50, 60, 70, 80, 90}, "\E(0\E[0;1;2;4;7;5;8m"}}
+          {"video_attributes_1",
+           {"%?%p9%t\E(0%e\E(B%;\E[0%?%p6%t;1%;%?%p5%t;2%;%?%p2%t;4%;%?%p1%p3%|"
+            "%t;7%;%?%p4%t;5%;%?%p7%t;8%;m",
+            {10, 20, 30, 40, 50, 60, 70, 80, 90},
+            "\E(0\E[0;1;2;4;7;5;8m"}}
 
       };
 

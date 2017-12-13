@@ -1,5 +1,8 @@
+#include <cctype>
+#include <ios>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <stack>
 #include <string>
 #include <typeinfo>
@@ -48,22 +51,22 @@ std::string evaluateString(const std::string &notEvaluated,
         break;
       }
 
-      case 'd': {
-        // auto top = std::to_string(s.top());
-        // s.pop();
-        // answer += top;
-        auto top = s.top();
-        s.pop();
+      // case 'd': {
+      //   // auto top = std::to_string(s.top());
+      //   // s.pop();
+      //   // answer += top;
+      //   auto top = s.top();
+      //   s.pop();
 
-        if (std::holds_alternative<int>(top)) {
-          auto res = std::to_string(std::get<int>(top));
-          answer += res;
-        } else {
-          // TODO: what should happen if top of the stack is not an integer ?
-          throw std::runtime_error("Oops.. top of the stack not an integer");
-        }
-        break;
-      }
+      //   if (std::holds_alternative<int>(top)) {
+      //     auto res = std::to_string(std::get<int>(top));
+      //     answer += res;
+      //   } else {
+      //     // TODO: what should happen if top of the stack is not an integer ?
+      //     throw std::runtime_error("Oops.. top of the stack not an integer");
+      //   }
+      //   break;
+      // }
 
       case 't': {
         if (!s.empty()) { // TODO: what should happen if stack is empty
@@ -72,20 +75,11 @@ std::string evaluateString(const std::string &notEvaluated,
           s.pop();
 
           if (isTruthy(top)) {
-            // push a false onto the stack to let corresponding else know to not
-            // execute
-            // ifElseRes.push(false);
             // push a true onto the stack to let the corresponding else_if's and
             // else's to know that some branch before them executed do nothing
-            // auto someBranchBeforeExecuted = ifElseRes.top();
-            // if (not someBranchBeforeExecuted)
-            // {ifElseRes.pop();ifElseRes.push(true);} the following else case
-            // shouldn't arise else { throw runtime_error("For now throwing
-            // error if multiple else-if's satisfied"); }
             ifElseRes.top() = true;
             // and let the following expressions parse
           } else {
-            // ifElseRes.push(false);
             // move curr untill it starts pointing to this then's else
             // maintain integer nesting variable to count inner if-else's if any
             auto nesting = 0;
@@ -711,15 +705,237 @@ std::string evaluateString(const std::string &notEvaluated,
         break;
       }
 
-      default:
-        std::cout << " hello";
-        answer += *curr;
-        break;
+      default: {
+        if (*curr == ':' or *curr == ' ' or *curr == '#') {
+          if (*curr == ':') {
+            // parse + or - next and set flag
+            curr++;
+            if (*curr == '+') {
+              // set flag to std::showpos
+            } else if (*curr == '-') {
+              // set flag to std::left
+            } else {
+              throw std::runtime_error("Invalid char found after ':'");
+            }
+          } else if (*curr == ' ') {
+            // set flag
+            curr++;
+          } else if (*curr == '#') {
+            // set flag
+            curr++;
+          }
+          // one curr++ remaining somewhere above
+        }
+
+        if (std::isdigit(*curr)) {
+          // parse width untill '.' is reached
+          std::string widthToBe;
+          while (std::isdigit(*curr)) {
+            widthToBe += *curr;
+            curr++;
+          }
+          // std::cout << "[line 737] widthToBe:" << widthToBe << '\n';
+        }
+
+        if (*curr == '.') {
+          // parse precision untill you reach one of base specifiers
+          curr++;
+          std::string precisionToBe;
+          while (std::isdigit(*curr)) {
+            precisionToBe += *curr;
+            curr++;
+          }
+          // std::cout << "[line 748] precisionToBe:" << precisionToBe << '\n';
+        }
+
+        if (*curr == 'd' or *curr == 's' or *curr == 'x' or *curr == 'X' or
+            *curr == 'o') {
+          // std::cout << "inside base if\n";
+          // set flag on string stream accordingly
+          // but first also pop the stack to get the value that is to be printed
+          // check if the value popped is compatible with base found
+          auto top = s.top();
+          s.pop();
+
+          std::stringstream formattingStream(
+              std::ios_base::out); // VERIFY: this
+                                   // stream's
+                                   // destructor must
+                                   // be called when
+                                   // this scope exits
+
+          switch (*curr) {
+          case 'd': { /* set std::dec on stringstream */
+            if (std::holds_alternative<int>(top)) {
+              auto res = std::to_string(std::get<int>(top));
+              // TODO: before appending format what is to be printed
+              answer += res;
+            } else {
+              throw std::runtime_error(
+                  "Oops.. top of the stack not an integer");
+            }
+            break;
+          }
+
+          case 'x': { /* set std::hex on stringstream */
+            if (std::holds_alternative<int>(top)) {
+              std::hex(formattingStream);
+              // TODO: before appending format what is to be printed
+              formattingStream << std::get<int>(top);
+              answer += formattingStream.str();
+            } else {
+              throw std::runtime_error(
+                  "Oops.. top of the stack not an integer");
+            }
+            break;
+          }
+
+          case 'X': { /* set std::uppercase on stringstream */
+            if (std::holds_alternative<int>(top)) {
+              std::uppercase(formattingStream);
+              std::hex(formattingStream);
+              // TODO: before appending format what is to be printed
+              formattingStream << std::get<int>(top);
+              answer += formattingStream.str();
+            } else {
+              throw std::runtime_error(
+                  "Oops.. top of the stack not an integer");
+            }
+            break;
+          }
+
+          case 'o': { /* set std::oct on stringstream */
+            if (std::holds_alternative<int>(top)) {
+              std::oct(formattingStream);
+              // TODO: before appending format what is to be printed
+              formattingStream << std::get<int>(top);
+              answer += formattingStream.str();
+            } else {
+              throw std::runtime_error(
+                  "Oops.. top of the stack not an integer");
+            }
+            break;
+          }
+
+          case 's': {
+            if (std::holds_alternative<std::string>(top)) {
+              auto res = std::get<std::string>(top);
+              // TODO: before appending format what is to be printed
+              formattingStream << res;
+              answer += formattingStream.str();
+            } else {
+              throw std::runtime_error("Oops.. top of the stack not an string");
+            }
+            break;
+          }
+          }
+        } else {
+          throw std::runtime_error("Invalid % encoding found");
+        }
+
+        // print to string stream and get back the res from it and append it to
+        // answer string
       }
 
-      // std::cout << "\n  answer is: " << answer;
-    }
+        // default: {
 
+        //   // set width, flag, precision and base according to ncurses
+        //   if (std::isdigit(*curr)) {
+        //     // parse width
+        //     std::string widthStr;
+        //     while (std::isdigit(*curr)) {
+        //       widthStr += *curr;
+        //       curr++;
+        //     }
+        //     // set width to the parsed one
+        //   } else {
+        //     switch (*curr) {
+        //     case ':':{
+        //       auto next = *(curr + 1);
+        //       if (next == '+' or next == '-'){
+
+        //         // set flag accordingly
+        //       } else {
+        //         throw std::runtime_error("Invalid character found after
+        //         ':'");
+        //       }
+        //       break;
+        //     }
+        //     case ' ':
+        //     case '#':
+        //     case '.': {
+        //       // parse precision
+        //       std::string precisionStr;
+        //       while (std::isdigit(*curr)) {
+        //         precisionStr += *curr;
+        //         curr++;
+        //       }
+        //       // set precision to the parsed one
+        //       break;
+        //     }
+        //     case 'd':
+        //     case 's':
+        //     case 'x':
+        //     case 'X':
+        //     case 'o':
+        //     default: // raise error
+        //     }
+        //   }
+        // }
+        // *********************************************************************
+        // default: {
+        //   // std::cout << " hello";
+        //   // answer += *curr;
+        //   switch(*curr){
+        //     // initialize width, precision, flags and repr flag with default
+        //     values according to ncurses int width; case ':':{ break;} case
+        //     '#':{ break;} case ' ':{ break;} case '.':{
+        //       // parse precision
+        //       std::string precisionStr;
+        //       while(std::isdigit(*curr)){
+        //         precisionStr += *curr;
+        //         curr++;
+        //       }
+        //       precision = std::stoi(precisionStr);
+        //       break;
+        //     }
+        //     case 'd':{
+        //       break;
+        //     }
+        //     case 'o':{
+        //       break;
+        //     }
+        //     case 'x': {
+        //       break;
+        //     }
+        //     case 'X': {
+        //       break;
+        //     }
+        //     case 's': {break;}
+        //     default: {
+        //       // check if it is a digit
+        //       if (std::isdigit(*curr)){
+        //         // find width and/or precision
+        //         std::string widthStr;
+        //         while (std::isdigit(*curr)){
+        //           widthStr += *curr;
+        //           curr++;
+        //         }
+        //         auto width = std::stoi(widthStr);
+
+        //       } else {
+        //         throw std::runtime_error("Invalid % encoding found");
+        //       }
+        //       break;
+        //     }
+        //   }
+        //   break;
+        // }
+
+        // std::cout << "\n  answer is: " << answer;
+        // *********************************************************************
+      }
+    }
     curr++;
   }
 
