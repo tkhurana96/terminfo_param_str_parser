@@ -9,8 +9,6 @@
 #include <variant>
 #include <vector>
 
-enum class base { d = 'd', o = 'o', x = 'x', X = 'X', s = 's' };
-
 using valType = std::variant<int, std::string>;
 
 auto isTruthy(valType arg) {
@@ -25,48 +23,26 @@ std::string evaluateString(const std::string &notEvaluated,
                            std::vector<valType> args = {}) {
 
   std::string answer;
-  // std::stack<int> s;
   std::stack<valType> s;
   std::stack<bool> ifElseRes;
   std::map<std::string, valType> vars;
 
   for (auto curr = notEvaluated.begin(); curr != notEvaluated.end();) {
-    // std::cout << "\n\n    current char is: " << *curr;
 
     if (*curr != '%') {
 
       answer += *curr;
-      // curr++;
     } else {
       curr++;
 
       switch (*curr) {
 
       case '\'': {
-        // auto constCharASCIIVal = static_cast<int>(*++curr) - 48 - 1;
-        // s.push(constCharASCIIVal);
         auto constChar = std::string() + *++curr;
         s.push(valType(constChar));
         curr++;
         break;
       }
-
-      // case 'd': {
-      //   // auto top = std::to_string(s.top());
-      //   // s.pop();
-      //   // answer += top;
-      //   auto top = s.top();
-      //   s.pop();
-
-      //   if (std::holds_alternative<int>(top)) {
-      //     auto res = std::to_string(std::get<int>(top));
-      //     answer += res;
-      //   } else {
-      //     // TODO: what should happen if top of the stack is not an integer ?
-      //     throw std::runtime_error("Oops.. top of the stack not an integer");
-      //   }
-      //   break;
-      // }
 
       case 't': {
         if (!s.empty()) { // TODO: what should happen if stack is empty
@@ -150,7 +126,6 @@ std::string evaluateString(const std::string &notEvaluated,
       case 'p': {
         auto paramNum = static_cast<int>(*++curr) - 48 - 1;
         if (paramNum < args.size()) { // TODO: what should happen if this fails
-          // s.push(args[paramNum]);
           s.push(args[paramNum]);
         } else {
           throw std::runtime_error(
@@ -185,11 +160,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '+': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 + operand2);
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -225,11 +195,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '-': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 - operand2);
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -253,11 +218,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '*': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 * operand2);
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -281,14 +241,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '/': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // if (operand1 == 0) {
-          //   throw std::runtime_error("Division by zero attempted");
-          // }
-          // s.push(operand2 / operand1);
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -317,11 +269,6 @@ std::string evaluateString(const std::string &notEvaluated,
       case 'm': // NOTE: special char for mod
       {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 % operand2);
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -344,12 +291,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '&': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 & operand2);
-
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -373,12 +314,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '|': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 | operand2);
-
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -402,12 +337,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '^': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 ^ operand2);
-
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -430,13 +359,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case 'i': {
         if (args.size() >= 1) { // TODO: what should happen if this fails
-          // Should do by using .at() or use custom if-else's ?
-          // try {
-          // args.at(0) += 1;
-          // args.at(1) += 1;
-          // } catch (const std::out_of_range) {
-          //   // Should anything be done with this exception, I don't think so.
-          // }
           try {
             if (std::holds_alternative<int>(args.at(0))) {
               std::get<int>(args.at(0)) += 1;
@@ -470,12 +392,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '<': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 < operand2);
-
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -498,12 +414,6 @@ std::string evaluateString(const std::string &notEvaluated,
 
       case '>': {
         if (s.size() >= 2) { // TODO: what should happen if this fails
-          // auto operand1 = s.top();
-          // s.pop();
-          // auto operand2 = s.top();
-          // s.pop();
-          // s.push(operand1 > operand2);
-
           auto operand1 = s.top();
           s.pop();
           auto operand2 = s.top();
@@ -525,24 +435,6 @@ std::string evaluateString(const std::string &notEvaluated,
       }
 
       case '!': {
-        // if (s.size() >= 1) { // TODO: what should happen if this fails
-        //   // auto operand = s.top();
-        //   // s.pop();
-        //   // s.push(!operand); // TODO: confirm this !operand
-        //   auto operand = s.top();
-        //   s.pop();
-
-        //   if (std::holds_alternative<int>(operand)){
-        //     s.push(valType(!operand));
-        //   } else {
-        //     throw std::runtime_error("Invalid operand i.e. string for not(!)
-        //     operator")
-        //   }
-        // } else {
-        //   throw std::runtime_error(
-        //       "Number of operands less than 1.. Invalid expression to
-        //       parse");
-        // }
         if (s.size() >= 1) {
           auto top = s.top();
           s.pop();
@@ -551,16 +443,11 @@ std::string evaluateString(const std::string &notEvaluated,
           throw std::runtime_error(
               "Number of operands less than 1.. Invalid expression to parse");
         }
-        // std::cout << "logical-not not yet implemented\n";
         break;
       }
 
       case '~': {
         if (s.size() >= 1) { // TODO: what should happen if this fails
-          // auto operand = s.top();
-          // s.pop();
-          // s.push(~operand); // TODO: confirm this ~operand and need to use
-          //                   // unsigned int
 
           auto operand = s.top();
           s.pop();
@@ -580,12 +467,6 @@ std::string evaluateString(const std::string &notEvaluated,
       }
 
       case '{': {
-        // std::string decimalNumberToBe;
-        // while (*++curr != '}') {
-        //   decimalNumberToBe += *curr;
-        // }
-        // s.push(std::stoi(decimalNumberToBe));
-
         std::string decimalNumberToBe;
         while (*++curr != '}') {
           decimalNumberToBe += *curr;
@@ -599,10 +480,6 @@ std::string evaluateString(const std::string &notEvaluated,
         // be popped as character and appended to answer. So if top of stack
         // contains 3 then '3' should be appended to output or ascii value
         // corresponding to 3 ? for now appending the ascii value.
-
-        // auto charCorrespondingToTop = static_cast<char>(s.top());
-        // s.pop();
-        // answer += charCorrespondingToTop;
 
         auto top = s.top();
         s.pop();
@@ -620,11 +497,6 @@ std::string evaluateString(const std::string &notEvaluated,
         // DOUBT: Should pop the whole stack or only the topmost item ?
         // for now poppping the whole stack.
         // DOUBT: same doubt as case 'c'
-        // while (!s.empty()) {
-        //   answer += static_cast<char>(s.top());
-        //   s.pop();
-        // }
-
         auto top = s.top();
         s.pop();
 
@@ -637,10 +509,6 @@ std::string evaluateString(const std::string &notEvaluated,
       }
 
       case 'l': {
-        // auto poppedVal = std::to_string(s.top());
-        // s.pop();
-        // s.push(poppedVal.size());
-
         auto top = s.top();
         s.pop();
 
@@ -650,32 +518,6 @@ std::string evaluateString(const std::string &notEvaluated,
         } else {
           throw std::runtime_error("Bad operand(int) for calculating length");
         }
-        break;
-      }
-
-      case ':':
-      case ' ':
-      case '#': {
-        // TODO: check the validity of this parsing algo
-        std::string numberToBe;
-        curr++;
-        if (*curr == '+' || *curr == '-') {
-          numberToBe += *curr;
-          curr++;
-        }
-        char base{'d'};
-        while (*curr != '%' && curr != notEvaluated.end()) {
-          if (*curr == 'd' || *curr == 'o' || *curr == 'x' || *curr == 'X' ||
-              *curr == 's') {
-            base = *curr;
-            break;
-          }
-          numberToBe += *curr;
-          curr++;
-        }
-        // here we got the numberToBe and the base, now convert the number to
-        // that base and append to answer
-
         break;
       }
 
@@ -734,7 +576,6 @@ std::string evaluateString(const std::string &notEvaluated,
             widthToBe += *curr;
             curr++;
           }
-          // std::cout << "[line 737] widthToBe:" << widthToBe << '\n';
         }
 
         if (*curr == '.') {
@@ -745,12 +586,10 @@ std::string evaluateString(const std::string &notEvaluated,
             precisionToBe += *curr;
             curr++;
           }
-          // std::cout << "[line 748] precisionToBe:" << precisionToBe << '\n';
         }
 
         if (*curr == 'd' or *curr == 's' or *curr == 'x' or *curr == 'X' or
             *curr == 'o') {
-          // std::cout << "inside base if\n";
           // set flag on string stream accordingly
           // but first also pop the stack to get the value that is to be printed
           // check if the value popped is compatible with base found
@@ -836,104 +675,6 @@ std::string evaluateString(const std::string &notEvaluated,
         // print to string stream and get back the res from it and append it to
         // answer string
       }
-
-        // default: {
-
-        //   // set width, flag, precision and base according to ncurses
-        //   if (std::isdigit(*curr)) {
-        //     // parse width
-        //     std::string widthStr;
-        //     while (std::isdigit(*curr)) {
-        //       widthStr += *curr;
-        //       curr++;
-        //     }
-        //     // set width to the parsed one
-        //   } else {
-        //     switch (*curr) {
-        //     case ':':{
-        //       auto next = *(curr + 1);
-        //       if (next == '+' or next == '-'){
-
-        //         // set flag accordingly
-        //       } else {
-        //         throw std::runtime_error("Invalid character found after
-        //         ':'");
-        //       }
-        //       break;
-        //     }
-        //     case ' ':
-        //     case '#':
-        //     case '.': {
-        //       // parse precision
-        //       std::string precisionStr;
-        //       while (std::isdigit(*curr)) {
-        //         precisionStr += *curr;
-        //         curr++;
-        //       }
-        //       // set precision to the parsed one
-        //       break;
-        //     }
-        //     case 'd':
-        //     case 's':
-        //     case 'x':
-        //     case 'X':
-        //     case 'o':
-        //     default: // raise error
-        //     }
-        //   }
-        // }
-        // *********************************************************************
-        // default: {
-        //   // std::cout << " hello";
-        //   // answer += *curr;
-        //   switch(*curr){
-        //     // initialize width, precision, flags and repr flag with default
-        //     values according to ncurses int width; case ':':{ break;} case
-        //     '#':{ break;} case ' ':{ break;} case '.':{
-        //       // parse precision
-        //       std::string precisionStr;
-        //       while(std::isdigit(*curr)){
-        //         precisionStr += *curr;
-        //         curr++;
-        //       }
-        //       precision = std::stoi(precisionStr);
-        //       break;
-        //     }
-        //     case 'd':{
-        //       break;
-        //     }
-        //     case 'o':{
-        //       break;
-        //     }
-        //     case 'x': {
-        //       break;
-        //     }
-        //     case 'X': {
-        //       break;
-        //     }
-        //     case 's': {break;}
-        //     default: {
-        //       // check if it is a digit
-        //       if (std::isdigit(*curr)){
-        //         // find width and/or precision
-        //         std::string widthStr;
-        //         while (std::isdigit(*curr)){
-        //           widthStr += *curr;
-        //           curr++;
-        //         }
-        //         auto width = std::stoi(widthStr);
-
-        //       } else {
-        //         throw std::runtime_error("Invalid % encoding found");
-        //       }
-        //       break;
-        //     }
-        //   }
-        //   break;
-        // }
-
-        // std::cout << "\n  answer is: " << answer;
-        // *********************************************************************
       }
     }
     curr++;
@@ -941,20 +682,3 @@ std::string evaluateString(const std::string &notEvaluated,
 
   return answer;
 }
-
-// int main()
-// {
-
-//   std::string str = "\\E]4;%p1%d;rgb\\:%p2%{255}%*%{1000}%/%2.2X/"
-//                     "%p3%{255}%*%{1000}%/%2.2X/%p4%{255}%*%{1000}%/%2.2X\E\\";
-
-//   // = "%tushar";
-//   // std::cout << "Enter the string to parse: ";
-//   // std::cin >> str;
-
-//   auto res = evaluateString(str, {1, 2, 3, 4});
-
-//   std::cout << "    evaluated String res is: " << res << '\n';
-
-//   return 0;
-// }
